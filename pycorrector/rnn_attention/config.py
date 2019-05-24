@@ -4,10 +4,10 @@ import os
 
 # CGED chinese corpus
 raw_train_paths = [
-    # '../data/cn/CGED/CGED18_HSK_TrainingSet.xml',
-    # '../data/cn/CGED/CGED17_HSK_TrainingSet.xml',
-    # '../data/cn/CGED/CGED16_HSK_TrainingSet.xml',
-    '../data/cn/CGED/sample_HSK_TrainingSet.xml',
+     '../data/cn/CGED/CGED18_HSK_TrainingSet.xml',
+     '../data/cn/CGED/CGED17_HSK_TrainingSet.xml',
+     '../data/cn/CGED/CGED16_HSK_TrainingSet.xml',
+    # '../data/cn/CGED/sample_HSK_TrainingSet.xml',
 ]
 output_dir = './output'
 train_path = output_dir + '/train.txt'  # Training data path.
