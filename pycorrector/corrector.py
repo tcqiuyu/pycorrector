@@ -6,6 +6,7 @@ import operator
 import os
 import time
 
+import numpy as np
 from pypinyin import lazy_pinyin
 
 from pycorrector.detector import Detector, error_type
@@ -215,8 +216,20 @@ class Corrector(Detector):
         """
         if item not in maybe_right_items:
             maybe_right_items.append(item)
-        corrected_item = min(maybe_right_items, key=lambda k: self.ppl_score(list(before_sent + k + after_sent)))
-        return corrected_item
+        res = []
+        ori_score = self.ppl_score(before_sent + item + after_sent)
+        for maybe_right_item in maybe_right_items:
+            score = self.ppl_score(before_sent + maybe_right_item + after_sent)
+            res.append(score)
+        min_idx = np.argmin(res)
+        min_score = res[min_idx]
+        threshold = 2
+        if ori_score <= min_score + threshold:
+            return item
+        else:
+            return maybe_right_items[min_idx]
+        # corrected_item = min(maybe_right_items, key=lambda k: self.ppl_score(list(before_sent + k + after_sent)))
+        # return corrected_item
 
     def correct(self, sentence):
         """

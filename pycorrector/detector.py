@@ -2,10 +2,10 @@
 # Author: XuMing <xuming624@qq.com>
 # Brief: error word detector
 import codecs
-import kenlm
 import os
 import time
 
+import kenlm
 import numpy as np
 
 from pycorrector.tokenizer import Tokenizer
@@ -212,7 +212,7 @@ class Detector(object):
         end_idx = 2
         for err in maybe_errors:
             if maybe_err[error_word_idx] in err[error_word_idx] and maybe_err[begin_idx] >= err[begin_idx] and \
-                            maybe_err[end_idx] <= err[end_idx]:
+                    maybe_err[end_idx] <= err[end_idx]:
                 return True
         return False
 
