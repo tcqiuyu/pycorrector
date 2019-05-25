@@ -27,7 +27,7 @@ from tensorflow.python.ops import rnn
 from tensorflow.python.ops import rnn_cell, rnn_cell_impl
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.ops.math_ops import tanh
-
+from tensorflow.contrib.rnn.python.ops import core_rnn_cell
 from pycorrector.rnn_attention.nlc_data import SOS_ID, EOS_ID
 
 
@@ -47,7 +47,7 @@ class GRUCellAttn(rnn_cell.GRUCell):
         with vs.variable_scope(scope or type(self).__name__):
             with vs.variable_scope("Attn1"):
                 hs2d = tf.reshape(self.hs, [-1, num_units])
-                phi_hs2d = tanh(rnn_cell_impl._linear(hs2d, num_units, False))
+                phi_hs2d = tanh(core_rnn_cell._linear(hs2d, num_units, False))
 
                 self.phi_hs = tf.reshape(phi_hs2d, tf.shape(self.hs))
         super(GRUCellAttn, self).__init__(num_units)
@@ -56,13 +56,13 @@ class GRUCellAttn(rnn_cell.GRUCell):
         gru_out, gru_state = super(GRUCellAttn, self).__call__(inputs, state, scope)
         with vs.variable_scope(scope or type(self).__name__):
             with vs.variable_scope("Attn2"):
-                gamma_h = tanh(rnn_cell_impl._linear(gru_out, self._num_units, False))
+                gamma_h = tanh(core_rnn_cell._linear(gru_out, self._num_units, False))
             weights = tf.reduce_sum(self.phi_hs * gamma_h, reduction_indices=2, keep_dims=True)
             weights = tf.exp(weights - tf.reduce_max(weights, reduction_indices=0, keep_dims=True))
             weights = weights / (1e-6 + tf.reduce_sum(weights, reduction_indices=0, keep_dims=True))
             context = tf.reduce_sum(self.hs * weights, reduction_indices=0)
             with vs.variable_scope("AttnConcat"):
-                out = tf.nn.relu(rnn_cell_impl._linear([context, gru_out], self._num_units, False))
+                out = tf.nn.relu(core_rnn_cell._linear([context, gru_out], self._num_units, False))
             self.attn_map = tf.squeeze(tf.slice(weights, [0, 0, 0], [-1, -1, 1]))
             return (out, out)
 
@@ -195,7 +195,7 @@ class NLCModel(object):
 
             with vs.variable_scope("Logistic", reuse=True):
                 do2d = tf.reshape(decoder_output, [-1, self.size])
-                logits2d = rnn_cell_impl._linear(do2d, self.vocab_size, False)
+                logits2d = core_rnn_cell._linear(do2d, self.vocab_size, False)
                 logprobs2d = tf.nn.log_softmax(logits2d)
 
             total_probs = logprobs2d + tf.reshape(beam_probs, [-1, 1])
@@ -248,7 +248,7 @@ class NLCModel(object):
             doshape = tf.shape(self.decoder_output)
             T, batch_size = doshape[0], doshape[1]
             do2d = tf.reshape(self.decoder_output, [-1, self.size])
-            logits2d = rnn_cell_impl._linear(do2d, self.vocab_size, False)
+            logits2d = core_rnn_cell._linear(do2d, self.vocab_size, False)
             outputs2d = tf.nn.log_softmax(logits2d)
             self.outputs = tf.reshape(outputs2d, tf.stack([T, batch_size, self.vocab_size]))
 
@@ -272,7 +272,7 @@ class NLCModel(object):
             inshape = tf.shape(inp)
             T, batch_size, dim = inshape[0], inshape[1], inshape[2]
             inp2d = tf.reshape(tf.transpose(inp, perm=[1, 0, 2]), [-1, 2 * self.size])
-            out2d = rnn_cell_impl._linear(inp2d, self.size, False)
+            out2d = core_rnn_cell._linear(inp2d, self.size, False)
             out3d = tf.reshape(out2d, tf.stack((batch_size, tf.to_int32(T / 2), dim)))
             out3d = tf.transpose(out3d, perm=[1, 0, 2])
             out3d.set_shape([None, None, self.size])
