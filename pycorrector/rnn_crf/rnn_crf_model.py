@@ -50,7 +50,7 @@ def callback(save_model_path, logger=None):
         batch_print_callback = LambdaCallback(
             on_batch_begin=lambda batch, logs: print(batch))
     # define the checkpoint, save model
-    checkpoint = ModelCheckpoint(save_model_path, monitor='val_acc',
+    checkpoint = ModelCheckpoint(save_model_path, monitor='val_crf_viterbi_accuracy',
                                  save_best_only=True, mode='auto',
                                  save_weights_only=True, verbose=1)
     return [batch_print_callback, checkpoint]

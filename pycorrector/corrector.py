@@ -17,7 +17,6 @@ from pycorrector.utils.text_utils import is_chinese_string
 default_logger = get_logger(__file__)
 pwd_path = os.path.abspath(os.path.dirname(__file__))
 
-
 def load_char_set(path):
     words = set()
     with codecs.open(path, 'r', encoding='utf-8') as f:
