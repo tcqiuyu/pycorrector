@@ -13,7 +13,7 @@ same_stroke_path = 'data/same_stroke.txt'
 # language model path
 # language_model_path = 'data/kenlm/people_chars_lm.klm'
 # language_model_path = '../data/kenlm/baoxian.klm'
-language_model_path = '../data/char_kenlm.arps'
+language_model_path = '../data/kenlm/char_kenlm.model'
 # 用户自定义错别字混淆集  format:变体	本体   本体词词频（可省略）
 custom_confusion_path = 'data/custom_confusion.txt'
 # 用户自定义分词词典  format: 词语 词频
