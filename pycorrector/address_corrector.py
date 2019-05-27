@@ -2,7 +2,6 @@ import re
 
 import Levenshtein as leven
 from pypinyin import pinyin, Style
-from tqdm import tqdm
 
 import config
 from detector import Detector
@@ -25,8 +24,8 @@ province_all_aliases = reverse_dict_with_not_unique_value(province_map)
 
 class AddressCorrector(Detector):
 
-    def __init__(self, language_model_path):
-        super(AddressCorrector, self).__init__(language_model_path=language_model_path)
+    def __init__(self):
+        super(AddressCorrector, self).__init__()
         self.name = 'address_corrector'
         self.initialized_detector = False
 
@@ -44,41 +43,72 @@ class AddressCorrector(Detector):
                 possible_right_map[len(item)] = [item]
 
         distances_result = []
-        for window_size in range(1, len(sentence_to_correct) + 1):
+        for window_size in possible_right_map.keys():
+            words_to_detect = possible_right_map[window_size]
             for i in range(len(sentence_to_correct)):  # 划窗
-                if i + window_size > len(sentence_to_correct):
+                if i + window_size >= len(sentence_to_correct):
                     break
                 running_word = sentence_to_correct[i: i + window_size]
-
                 sentence_before = sentence_to_correct[:i]
-                sentence_after = sentence_to_correct[i + window_size:]
-                for word_to_detect in possible_right_list:  # 检测与相同长度不同备选词编辑距离
-                    running_word_pinyins = pinyin(running_word, style=Style.TONE3)
+                sentence_after = sentence_to_correct[i + window_size]
+                running_word_pinyins = pinyin(running_word, style=Style.TONE3)
+                for word_to_detect in words_to_detect:  # 检测与相同长度不同备选词编辑距离
+                    assert len(word_to_detect) == len(running_word)
                     pinyins_to_detect = pinyin(word_to_detect, style=Style.TONE3)
                     dist = 0.0
-                    # 解决running word 和 word to detect 长度不等的情况
-                    diff = abs(len(running_word_pinyins) - len(pinyins_to_detect))
-                    if len(running_word_pinyins) > len(pinyins_to_detect):
-                        pinyins_to_detect = pinyins_to_detect + [[""]] * diff
-                    else:
-                        running_word_pinyins = running_word_pinyins + [[""]] * diff
-
-                    """检测发音相似度"""
                     for running_py, to_detect_py in zip(running_word_pinyins, pinyins_to_detect):
                         # 计算编辑距离
-                        edit_distance = leven.distance("".join(to_detect_py), "".join(running_py))
+                        edit_distance = leven.distance(to_detect_py[0], running_py[0])
+                        """检测发音相似度"""
                         if edit_distance >= len(to_detect_py):
                             edit_distance = edit_distance  # 若全部都不一样，则添加penalty
                         dist += edit_distance
                     """检测字相似度"""
                     dist_2 = leven.distance(word_to_detect, running_word) * 3
                     dist += dist_2
-                    if dist <= threshold:
+                    if dist < threshold:
                         # 距离，原句，改正句
                         distances_result.append(
                             (dist, sentence_to_correct, sentence_before + word_to_detect + sentence_after,
                              (i, i + window_size), running_word, word_to_detect))
         distances_result.sort(key=lambda x: x[0])
+
+        # for window_size in range(1, len(sentence_to_correct) + 1):
+        #     for i in range(len(sentence_to_correct)):  # 划窗
+        #         if i + window_size > len(sentence_to_correct):
+        #             break
+        #         running_word = sentence_to_correct[i: i + window_size]
+        #
+        #         sentence_before = sentence_to_correct[:i]
+        #         sentence_after = sentence_to_correct[i + window_size:]
+        #         for word_to_detect in possible_right_list:  # 检测与相同长度不同备选词编辑距离
+        #             running_word_pinyins = pinyin(running_word, style=Style.TONE3)
+        #             pinyins_to_detect = pinyin(word_to_detect, style=Style.TONE3)
+        #             dist = 0.0
+        #             # 解决running word 和 word to detect 长度不等的情况
+        #             diff = abs(len(running_word_pinyins) - len(pinyins_to_detect))
+        #             if len(running_word_pinyins) > len(pinyins_to_detect):
+        #                 pinyins_to_detect = pinyins_to_detect + [[""]] * diff
+        #             else:
+        #                 running_word_pinyins = running_word_pinyins + [[""]] * diff
+        #
+        #             """检测发音相似度"""
+        #             for running_py, to_detect_py in zip(running_word_pinyins, pinyins_to_detect):
+        #                 # 计算编辑距离
+        #                 edit_distance = leven.distance("".join(to_detect_py), "".join(running_py))
+        #                 if edit_distance >= len(to_detect_py):
+        #                     edit_distance = edit_distance  # 若全部都不一样，则添加penalty
+        #                 dist += edit_distance
+        #             """检测字相似度"""
+        #             dist_2 = leven.distance(word_to_detect, running_word) * 3
+        #             dist += dist_2
+        #             if dist <= threshold:
+        #                 # 距离，原句，改正句
+        #                 distances_result.append(
+        #                     (dist, sentence_to_correct, sentence_before + word_to_detect + sentence_after,
+        #                      (i, i + window_size), running_word, word_to_detect))
+        # distances_result.sort(key=lambda x: x[0])
+
         # output minimum distance with no overlap
         correct_overlap = set()
         for distance_item in distances_result:
@@ -168,17 +198,18 @@ class AddressCorrector(Detector):
 
 
 if __name__ == '__main__':
-
     address_corrector = AddressCorrector(config.language_model_path)
-    # print(address_corrector.correct("我住新城花园", "暨阳街道市南路85号兴城花园10幢010502"))
-    print(address_corrector._get_possible_parts("辽宁省北通市后门区幸福花园15号楼101室")[2])
-    address_corrector.correct("", "广东省东莞市虎门镇大宁社区浦江路2号")
-    with open("../data/addr.csv", "r") as f:
-        with open("../data/addr_parse.txt", "w") as fin:
-            for line in tqdm(f.readlines()):
-                addr = line.split(',')[0]
-                if addr == "":
-                    continue
-                fin.write(addr + "\n")
-                _, _, split = address_corrector._get_possible_parts(addr)
-                fin.write(str(split) + "\n")
+    # zhuxin
+    # zhejiang
+    print(address_corrector.correct("我住新城花园", "浙江省诸暨市暨阳街道市南路85号兴城花园10幢010502"))
+    # print(address_corrector._get_possible_parts("辽宁省北通市后门区幸福花园15号楼101室")[2])
+    # address_corrector.correct("", "广东省东莞市虎门镇大宁社区浦江路2号")
+    # with open("../data/地址数据/addr.csv", "r") as f:
+    #     with open("../data/地址数据/addr_parse.txt", "w") as fin:
+    #         for line in tqdm(f.readlines()):
+    #             addr = line.split(',')[0]
+    #             if addr == "":
+    #                 continue
+    #             fin.write(addr + "\n")
+    #             _, _, split = address_corrector._get_possible_parts(addr)
+    #             fin.write(str(split) + "\n")

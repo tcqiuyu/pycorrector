@@ -21,10 +21,10 @@ def evaluate(corrector: Corrector, test_data):
     total = len(test_data)
     correct = 0.0
     start_time = time.time()
-    for input, golden in tqdm(test_data, desc=correct / total):
+    for input, golden in tqdm(test_data, desc=str(correct / total)):
         corrected = corrector.correct(input)
         print(corrected)
-        if corrected == golden:
+        if corrected[0] == golden:
             correct += 1
     acc = correct / total
     end_time = time.time()
