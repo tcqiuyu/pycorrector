@@ -46,11 +46,11 @@ class AddressCorrector(Detector):
         for window_size in possible_right_map.keys():
             words_to_detect = possible_right_map[window_size]
             for i in range(len(sentence_to_correct)):  # 划窗
-                if i + window_size >= len(sentence_to_correct):
+                if i + window_size > len(sentence_to_correct):
                     break
                 running_word = sentence_to_correct[i: i + window_size]
                 sentence_before = sentence_to_correct[:i]
-                sentence_after = sentence_to_correct[i + window_size]
+                sentence_after = sentence_to_correct[i + window_size:]
                 running_word_pinyins = pinyin(running_word, style=Style.TONE3)
                 for word_to_detect in words_to_detect:  # 检测与相同长度不同备选词编辑距离
                     assert len(word_to_detect) == len(running_word)
@@ -198,7 +198,7 @@ class AddressCorrector(Detector):
 
 
 if __name__ == '__main__':
-    address_corrector = AddressCorrector(config.language_model_path)
+    address_corrector = AddressCorrector()
     # zhuxin
     # zhejiang
     print(address_corrector.correct("我住新城花园", "浙江省诸暨市暨阳街道市南路85号兴城花园10幢010502"))
