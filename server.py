@@ -36,4 +36,4 @@ if __name__ == '__main__':
     parser.add_argument('port', default=9140, type=int, help='服务端口，默认9130')
     args = parser.parse_args()
 
-    start_main_server()
+    start_main_server().run(host='0.0.0.0', port=args.port)
