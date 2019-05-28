@@ -20,6 +20,7 @@ def load_test_data(path):
 def evaluate(corrector: Corrector, test_data):
     total = len(test_data)
     correct = 0.0
+
     start_time = time.time()
     for input, golden in tqdm(test_data, desc=str(correct / total)):
         corrected = corrector.correct(input)
