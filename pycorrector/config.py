@@ -14,9 +14,9 @@ same_pinyin_path = this_dir + "/" + 'data/same_pinyin.txt'
 # 形似字
 same_stroke_path = this_dir + "/" + 'data/same_stroke.txt.bak'
 # language model path
-language_model_path = this_dir + "/" + '../data/kenlm/people_chars_lm.klm'
-# language_model_path = this_dir + "/" +'../data/kenlm/baoxian.klm'
-# language_model_path = this_dir + "/" + '../data/language_model_data/lm_char.klm'
+language_model_path = this_dir + "/" + '../data/language_model_data/renmin/people_chars_lm.klm'
+#language_model_path = this_dir + "/" + '../data/language_model_data/renmin/people2014corpus_chars.klm'
+#language_model_path = this_dir + "/" + '../data/language_model_data/wiki/lm_char.klm'
 # language_model_path = this_dir + "/" +'../data/kenlm/char_kenlm.model'
 # 用户自定义错别字混淆集  format:变体	本体   本体词词频（可省略）
 custom_confusion_path = this_dir + "/" + 'data/custom_confusion.txt'
