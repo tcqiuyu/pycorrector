@@ -153,12 +153,13 @@ class AddressCorrector(Detector):
             elif re.fullmatch(".+?(小区|大街|街道)", additional_addr_part):
                 possible_right_parts.append(additional_addr_part[:-2])
                 possible_right_parts.append(additional_addr_part)
-            elif re.match('([\\d一二三四五六七八九十百千]+?(?:栋|幢|号))|'  # XX号XX栋XX号楼，不完全匹配防止corner case
+            elif re.match('([\\d一二三四五六七八九十百千]+?(?:栋|幢|号|弄))|'  # XX号XX栋XX号楼，不完全匹配防止corner case
                           '([\\d一二三四五六七八九十百千]+?[层室])|', additional_addr_part):
                 need_to_check_parts.append(additional_addr_part)
-                need_to_check_parts.append(additional_addr_part[:-1])
 
         for special_part in special_parts:
+            if special_part.isdigit():
+                continue
             possible_right_parts.append(special_part)
         return possible_right_parts, need_to_check_parts, split
 
@@ -200,7 +201,7 @@ if __name__ == '__main__':
     address_corrector = AddressCorrector()
     # zhuxin
     # zhejiang
-    print(address_corrector.correct("我住新城花园", "浙江省诸暨市暨阳街道市南路85号兴城花园10幢010502"))
+    print(address_corrector.correct("438弄10号102", "上海市杨浦区宁国路438弄10号102"))
     # print(address_corrector._get_possible_parts("辽宁省北通市后门区幸福花园15号楼101室")[2])
     # address_corrector.correct("", "广东省东莞市虎门镇大宁社区浦江路2号")
     # with open("../data/地址数据/addr.csv", "r") as f:

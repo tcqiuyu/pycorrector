@@ -22,12 +22,15 @@ def evaluate(corrector: Corrector, test_data):
     correct = 0.0
 
     start_time = time.time()
-    for input, golden in tqdm(test_data, desc=str(correct / total)):
+    acc = 0.0
+    pbar = tqdm(test_data, desc=acc)
+    for input, golden in pbar:
         corrected = corrector.correct(input)
         print(corrected)
         if corrected[0] == golden:
             correct += 1
-    acc = correct / total
+        acc = correct / total
+        pbar.set_description(acc)
     end_time = time.time()
     return acc, (end_time - start_time)
 
