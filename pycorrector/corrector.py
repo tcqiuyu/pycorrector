@@ -250,17 +250,21 @@ class Corrector(Detector):
         maybe_errors = self.detect(sentence)
         # trick: 类似翻译模型，倒序处理
         maybe_errors = sorted(maybe_errors, key=operator.itemgetter(2), reverse=True)
+        print("maybe_errors:{}".format(maybe_errors))
         for item, begin_idx, end_idx, err_type in maybe_errors:
             # 纠错，逐个处理
+            print("处理字「{}」".format(item))
             before_sent = sentence[:begin_idx]
             after_sent = sentence[end_idx:]
 
             # 困惑集中指定的词，直接取结果
             if err_type == error_type["confusion"]:
                 corrected_item = self.custom_confusion[item]
+                print("困惑集中指定的词，直接取结果: corrected_item={}".format(corrected_item))
             else:
                 # 对非中文的错字不做处理
                 if not is_chinese_string(item):
+                    print("对非中文的错字不做处理")
                     continue
                 # 取得所有可能正确的词
                 maybe_right_items = self.generate_items(item)
