@@ -10,7 +10,7 @@ from pycorrector.config import *
 
 def start_main_server():
     app = Flask(__name__)
-
+    app.debug = True
     general_corrector = Corrector(common_char_path=common_char_path,
                                   same_pinyin_path=same_pinyin_path,
                                   same_stroke_path=same_stroke_path,
