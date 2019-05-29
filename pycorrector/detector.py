@@ -235,7 +235,7 @@ class Detector(object):
         :param threshold: 阈值越小，得到疑似错别字越多
         :return:
         """
-        print("_get_maybe_error_index：")
+        print("取疑似错字的位置 (_get_maybe_error_index)：")
 
         scores = np.array(scores)
         if len(scores.shape) == 1:
@@ -244,9 +244,9 @@ class Detector(object):
         margin_median = np.sqrt(np.sum((scores - median) ** 2, axis=-1))  # deviation from the median
         # 平均绝对离差值
         med_abs_deviation = np.median(margin_median)
-        print("median={}".format(median))
-        print("margin_median={}".format(margin_median))
-        print("med_abs_deviation={}".format(med_abs_deviation))
+        print(" median={}".format(median))
+        print(" margin_median={}".format(margin_median))
+        print(" med_abs_deviation={}".format(med_abs_deviation))
         if med_abs_deviation == 0:
             return []
         y_score = ratio * margin_median / med_abs_deviation
@@ -258,7 +258,7 @@ class Detector(object):
         print(" scores={}".format(str(scores)))
 
         maybe_error_indices = np.where((y_score > threshold) & (scores < median))
-        print("疑似错字位置：{}".format(list(maybe_error_indices[0])))
+        print(" 疑似错字位置：{}".format(list(maybe_error_indices[0])))
         # 取全部疑似错误字的index
         return list(maybe_error_indices[0])
 
@@ -268,7 +268,7 @@ class Detector(object):
         :param sentence:
         :return: [error_word, begin_pos, end_pos, error_type]
         """
-        print("Detect process", file=stderr)
+        print("Detect process")
         maybe_errors = []
         if not sentence.strip():
             return maybe_errors
@@ -289,7 +289,7 @@ class Detector(object):
 
         if self.is_word_error_detect:
             # 未登录词加入疑似错误词典
-            print("未登录词加入疑似错误词典", file=stderr)
+            print("未登录词加入疑似错误词典:")
             for word, begin_idx, end_idx in tokens:
                 # pass blank
                 if not word.strip():
@@ -308,10 +308,10 @@ class Detector(object):
                     continue
                 maybe_err = [word, begin_idx, end_idx, error_type["word"]]
                 self._add_maybe_error_item(maybe_err, maybe_errors)
-                print("疑似词：{}".format(maybe_errors))
+                print(" 疑似词：{}".format(maybe_errors))
         if self.is_char_error_detect:
             # 语言模型检测疑似错误字
-            print("语言模型检测疑似错误字(划窗@char level)...", file=stderr)
+            print("语言模型检测疑似错误字(划窗@char level):")
             ngram_avg_scores = []
             try:
                 for n in [2, 3, 4]:
@@ -331,13 +331,13 @@ class Detector(object):
                     ngram_avg_scores.append(avg_scores)
 
                 # 取拼接后的ngram平均得分
-                print("ngram_avg_scores={}".format(ngram_avg_scores))
+                print(" ngram_avg_scores={}".format(ngram_avg_scores))
                 sent_scores = list(np.average(np.array(ngram_avg_scores), axis=0))
-                print("拼接后的ngram平均得分：{}".format(sent_scores))
+                print(" (拼接后的ngram平均得分)sent_scores={}".format(sent_scores))
                 # 取疑似错字信息
                 for i in self._get_maybe_error_index(sent_scores):
                     maybe_err = [sentence[i], i, i + 1, error_type["char"]]
-                    print("语言模型检测错字：{}".format(i))
+                    # print("语言模型检测错字：{}".format(i))
                     self._add_maybe_error_item(maybe_err, maybe_errors)
             except IndexError as ie:
                 logger.warn("index error, sentence:" + sentence + str(ie))

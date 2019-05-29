@@ -209,8 +209,7 @@ class Corrector(Detector):
         confusion_word_list = [item for item in confusion_word_set if is_chinese_string(item)]
         confusion_sorted = sorted(confusion_word_list, key=lambda k: self.word_frequency(k), reverse=True)
         # TODO: DEBUG
-        print("纠错候选集", file=sys.stderr)
-        print(confusion_sorted[:len(confusion_word_list) // fraction + 1], file=sys.stderr)
+        print("纠错候选集 maybe_right_items:{}".format(confusion_sorted[:len(confusion_word_list) // fraction + 1]))
         return confusion_sorted[:len(confusion_word_list) // fraction + 1]
 
     def lm_correct_item(self, item, maybe_right_items, before_sent, after_sent):

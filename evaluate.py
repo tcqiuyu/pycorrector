@@ -23,14 +23,14 @@ def evaluate(corrector: Corrector, test_data):
 
     start_time = time.time()
     acc = 0.0
-    pbar = tqdm(test_data, desc=acc)
+    pbar = tqdm(test_data, desc=str(acc))
     for input, golden in pbar:
+        print("{} - {}\t{}".format(pbar.n, input, golden))
         corrected = corrector.correct(input)
-        print(corrected)
         if corrected[0] == golden:
             correct += 1
         acc = correct / total
-        pbar.set_description(acc)
+        pbar.set_description(str(acc))
     end_time = time.time()
     return acc, (end_time - start_time)
 
