@@ -104,4 +104,4 @@ ENV/
 data/
 output
 *.swp 
-*.record
+record/
