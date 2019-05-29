@@ -4,6 +4,7 @@
 import codecs
 import operator
 import os
+import sys
 import time
 
 import numpy as np
@@ -208,8 +209,8 @@ class Corrector(Detector):
         confusion_word_list = [item for item in confusion_word_set if is_chinese_string(item)]
         confusion_sorted = sorted(confusion_word_list, key=lambda k: self.word_frequency(k), reverse=True)
         # TODO: DEBUG
-        default_logger.debug("纠错候选集")
-        default_logger.debug(confusion_sorted[:len(confusion_word_list) // fraction + 1])
+        print("纠错候选集", file=sys.stderr)
+        print(confusion_sorted[:len(confusion_word_list) // fraction + 1], file=sys.stderr)
         return confusion_sorted[:len(confusion_word_list) // fraction + 1]
 
     def lm_correct_item(self, item, maybe_right_items, before_sent, after_sent):
@@ -220,8 +221,10 @@ class Corrector(Detector):
             maybe_right_items.append(item)
         res = []
         ori_score = self.ppl_score(before_sent + item + after_sent)
+        print("ori_item 「{}」 - score: {}".format(item, ori_score))
         for maybe_right_item in maybe_right_items:
             score = self.ppl_score(before_sent + maybe_right_item + after_sent)
+            print("maybe_right_item 「{}」 - score: {}".format(maybe_right_item, score))
             res.append(score)
         min_idx = np.argmin(res)
         min_score = res[min_idx]
@@ -239,6 +242,8 @@ class Corrector(Detector):
         :param sentence: 句子文本
         :return: 改正后的句子, list(wrong, right, begin_idx, end_idx)
         """
+        # TODO：DEBUG
+        print("待检句子：「{}」".format(sentence))
         detail = []
         self.check_corrector_initialized()
         # 长句切分为短句

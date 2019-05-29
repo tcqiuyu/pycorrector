@@ -13,13 +13,18 @@ def get_logger(name, log_file=None):
     :param log_file: 日志文件，如无则输出到标准输出
     :return:
     """
-    format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    format = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+
     if not log_file:
         handle = logging.StreamHandler()
     else:
         handle = logging.FileHandler(log_file)
     handle.setFormatter(format)
     logger = logging.getLogger(name)
+
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+
     logger.addHandler(handle)
     logger.setLevel(logging.DEBUG)
     return logger

@@ -3,7 +3,6 @@ import re
 import Levenshtein as leven
 from pypinyin import pinyin, Style
 
-import config
 from detector import Detector
 from utils.cpca import transform, province_map
 
