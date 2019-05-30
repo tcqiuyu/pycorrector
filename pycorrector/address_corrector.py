@@ -48,6 +48,8 @@ class AddressCorrector(Detector):
                 if i + window_size > len(sentence_to_correct):
                     break
                 running_word = sentence_to_correct[i: i + window_size]
+                if re.findall(".*\\d.*", running_word):
+                    continue
                 sentence_before = sentence_to_correct[:i]
                 sentence_after = sentence_to_correct[i + window_size:]
                 running_word_pinyins = pinyin(running_word, style=Style.TONE3)
@@ -59,8 +61,8 @@ class AddressCorrector(Detector):
                         # 计算编辑距离
                         edit_distance = leven.distance(to_detect_py[0], running_py[0])
                         """检测发音相似度"""
-                        if edit_distance >= len(to_detect_py):
-                            edit_distance = edit_distance  # 若全部都不一样，则添加penalty
+                        if edit_distance >= len(to_detect_py[0]):
+                            edit_distance = edit_distance*2  # 若全部都不一样，则添加penalty
                         dist += edit_distance
                     """检测字相似度"""
                     dist_2 = leven.distance(word_to_detect, running_word) * 3
@@ -201,7 +203,7 @@ if __name__ == '__main__':
     address_corrector = AddressCorrector()
     # zhuxin
     # zhejiang
-    print(address_corrector.correct("438弄10号102", "上海市杨浦区宁国路438弄10号102"))
+    print(address_corrector.correct("上海徐汇区晚屏南路1109号", "上海市徐汇区宛平南路1109号"))
     # print(address_corrector._get_possible_parts("辽宁省北通市后门区幸福花园15号楼101室")[2])
     # address_corrector.correct("", "广东省东莞市虎门镇大宁社区浦江路2号")
     # with open("../data/地址数据/addr.csv", "r") as f:
