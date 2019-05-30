@@ -4,10 +4,10 @@
 import codecs
 import operator
 import os
-import sys
 import time
 
 import numpy as np
+from sklearn import metrics
 from pypinyin import lazy_pinyin
 
 from pycorrector.detector import Detector, error_type
@@ -17,6 +17,7 @@ from pycorrector.utils.text_utils import is_chinese_string
 
 default_logger = get_logger(__file__)
 pwd_path = os.path.abspath(os.path.dirname(__file__))
+
 
 def load_char_set(path):
     words = set()
@@ -235,14 +236,18 @@ class Corrector(Detector):
         # corrected_item = min(maybe_right_items, key=lambda k: self.ppl_score(list(before_sent + k + after_sent)))
         # return corrected_item
 
-    def correct(self, sentence):
+    def correct(self, sentence, golden=None):
         """
         句子改错
         :param sentence: 句子文本
         :return: 改正后的句子, list(wrong, right, begin_idx, end_idx)
         """
         # TODO：DEBUG
-        print("待检句子：「{}」".format(sentence))
+        original_sentence = sentence
+        print("待检句子：「{}」".format(original_sentence))
+        if golden:
+            print("答案：「{}」".format(golden))
+            phase1_golden = [0 if inp_char == gold_char else 1 for inp_char, gold_char in zip(sentence, golden)]
         detail = []
         self.check_corrector_initialized()
         # 长句切分为短句
@@ -251,6 +256,12 @@ class Corrector(Detector):
         # trick: 类似翻译模型，倒序处理
         maybe_errors = sorted(maybe_errors, key=operator.itemgetter(2), reverse=True)
         print("maybe_errors:{}".format(maybe_errors))
+        if golden:
+            phase1_pred = [0] * len(phase1_golden)
+            for maybe_err in maybe_errors:
+                for i in range(maybe_err[2] - maybe_err[1]):
+                    phase1_pred[maybe_err[1] + i] = 1
+
         for item, begin_idx, end_idx, err_type in maybe_errors:
             # 纠错，逐个处理
             print("处理字「{}」".format(item))
@@ -278,4 +289,7 @@ class Corrector(Detector):
                 detail_word = [item, corrected_item, begin_idx, end_idx]
                 detail.append(detail_word)
         detail = sorted(detail, key=operator.itemgetter(2))
+        if golden:
+            phase2_pred = [0 if inp_char == gold_char else 1 for inp_char, gold_char in zip(sentence, golden)]
+            return sentence, detail, phase1_golden, phase1_pred, phase2_pred
         return sentence, detail

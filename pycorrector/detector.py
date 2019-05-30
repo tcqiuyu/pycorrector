@@ -258,7 +258,6 @@ class Detector(object):
         print(" scores={}".format(str(scores)))
 
         maybe_error_indices = np.where((y_score > threshold) & (scores < median))
-        print(" 疑似错字位置：{}".format(list(maybe_error_indices[0])))
         # 取全部疑似错误字的index
         return list(maybe_error_indices[0])
 
@@ -337,6 +336,7 @@ class Detector(object):
                 # 取疑似错字信息
                 for i in self._get_maybe_error_index(sent_scores):
                     maybe_err = [sentence[i], i, i + 1, error_type["char"]]
+                    print(" 疑似错字位置：{}".format(maybe_err))
                     # print("语言模型检测错字：{}".format(i))
                     self._add_maybe_error_item(maybe_err, maybe_errors)
             except IndexError as ie:
