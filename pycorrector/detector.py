@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Author: XuMing <xuming624@qq.com>
-# Brief: error word detector
+# Brief: error word detect
 import codecs
 import os
 import time
@@ -28,7 +28,7 @@ class Detector(object):
                  person_name_path='',
                  place_name_path='',
                  stopwords_path=''):
-        self.name = 'detector'
+        self.name = 'detect'
         self.language_model_path = os.path.join(pwd_path, language_model_path)
         self.word_freq_path = os.path.join(pwd_path, word_freq_path)
         self.custom_word_freq_path = os.path.join(pwd_path, custom_word_freq_path)
@@ -235,7 +235,8 @@ class Detector(object):
         :param threshold: 阈值越小，得到疑似错别字越多
         :return:
         """
-        print("取疑似错字的位置 (_get_maybe_error_index)：")
+        # TODO: DEBUG
+        # print("取疑似错字的位置 (_get_maybe_error_index)：")
 
         scores = np.array(scores)
         if len(scores.shape) == 1:
@@ -244,18 +245,18 @@ class Detector(object):
         margin_median = np.sqrt(np.sum((scores - median) ** 2, axis=-1))  # deviation from the median
         # 平均绝对离差值
         med_abs_deviation = np.median(margin_median)
-        print(" median={}".format(median))
-        print(" margin_median={}".format(margin_median))
-        print(" med_abs_deviation={}".format(med_abs_deviation))
+        # print(" median={}".format(median))
+        # print(" margin_median={}".format(margin_median))
+        # print(" med_abs_deviation={}".format(med_abs_deviation))
         if med_abs_deviation == 0:
             return []
         y_score = ratio * margin_median / med_abs_deviation
         # 打平
         scores = scores.flatten()
-        print(" threshold={}".format(threshold))
-        print(" y_score={}".format(str(y_score)))
-        print(" median={}".format(median))
-        print(" scores={}".format(str(scores)))
+        # print(" threshold={}".format(threshold))
+        # print(" y_score={}".format(str(y_score)))
+        # print(" median={}".format(median))
+        # print(" scores={}".format(str(scores)))
 
         maybe_error_indices = np.where((y_score > threshold) & (scores < median))
         # 取全部疑似错误字的index
@@ -274,10 +275,11 @@ class Detector(object):
         self.check_detector_initialized()
         # 文本归一化
         sentence = uniform(sentence)
-        print("文本归一化：「{}」".format(sentence))
+        # TODO: DEBUG
+        # print("文本归一化：「{}」".format(sentence))
         # 切词
         tokens = self.tokenizer.tokenize(sentence)
-        print("切词：「{}」".format(tokens))
+        # print("切词：「{}」".format(tokens))
         # print(tokens)
         # 自定义混淆集加入疑似错误词典
         for confuse in self.custom_confusion:
@@ -288,7 +290,7 @@ class Detector(object):
 
         if self.is_word_error_detect:
             # 未登录词加入疑似错误词典
-            print("未登录词加入疑似错误词典:")
+            # print("未登录词加入疑似错误词典:")
             for word, begin_idx, end_idx in tokens:
                 # pass blank
                 if not word.strip():
@@ -307,10 +309,11 @@ class Detector(object):
                     continue
                 maybe_err = [word, begin_idx, end_idx, error_type["word"]]
                 self._add_maybe_error_item(maybe_err, maybe_errors)
-                print(" 疑似词：{}".format(maybe_errors))
+                # print(" 疑似词：{}".format(maybe_errors))
         if self.is_char_error_detect:
             # 语言模型检测疑似错误字
-            print("语言模型检测疑似错误字(划窗@char level):")
+            # TODO: DEBUG
+            # print("语言模型检测疑似错误字(划窗@char level):")
             ngram_avg_scores = []
             try:
                 for n in [2, 3, 4]:
@@ -330,13 +333,14 @@ class Detector(object):
                     ngram_avg_scores.append(avg_scores)
 
                 # 取拼接后的ngram平均得分
-                print(" ngram_avg_scores={}".format(ngram_avg_scores))
+                # TODO:DEBUG
+                # print(" ngram_avg_scores={}".format(ngram_avg_scores))
                 sent_scores = list(np.average(np.array(ngram_avg_scores), axis=0))
-                print(" (拼接后的ngram平均得分)sent_scores={}".format(sent_scores))
+                # print(" (拼接后的ngram平均得分)sent_scores={}".format(sent_scores))
                 # 取疑似错字信息
                 for i in self._get_maybe_error_index(sent_scores):
                     maybe_err = [sentence[i], i, i + 1, error_type["char"]]
-                    print(" 疑似错字位置：{}".format(maybe_err))
+                    # print(" 疑似错字位置：{}".format(maybe_err))
                     # print("语言模型检测错字：{}".format(i))
                     self._add_maybe_error_item(maybe_err, maybe_errors)
             except IndexError as ie:

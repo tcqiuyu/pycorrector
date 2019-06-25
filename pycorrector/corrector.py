@@ -210,7 +210,7 @@ class Corrector(Detector):
         confusion_word_list = [item for item in confusion_word_set if is_chinese_string(item)]
         confusion_sorted = sorted(confusion_word_list, key=lambda k: self.word_frequency(k), reverse=True)
         # TODO: DEBUG
-        print("纠错候选集 maybe_right_items:{}".format(confusion_sorted[:len(confusion_word_list) // fraction + 1]))
+        # print("纠错候选集 maybe_right_items:{}".format(confusion_sorted[:len(confusion_word_list) // fraction + 1]))
         return confusion_sorted[:len(confusion_word_list) // fraction + 1]
 
     def lm_correct_item(self, item, maybe_right_items, before_sent, after_sent):
@@ -236,6 +236,20 @@ class Corrector(Detector):
         # corrected_item = min(maybe_right_items, key=lambda k: self.ppl_score(list(before_sent + k + after_sent)))
         # return corrected_item
 
+    def detect2(self, sentence):
+        original_sentence = sentence
+        print("待检句子：「{}」".format(original_sentence))
+        detail = []
+        self.check_corrector_initialized()
+        # 长句切分为短句
+        # sentences = re.split(r"；|，|。|\?\s|;\s|,\s", sentence)
+        maybe_errors = self.detect(sentence)
+        # trick: 类似翻译模型，倒序处理
+        maybe_errors = sorted(maybe_errors, key=operator.itemgetter(2), reverse=True)
+        ret = [one[1] for one in maybe_errors]
+
+        return maybe_errors
+
     def correct(self, sentence, golden=None):
         """
         句子改错
@@ -244,9 +258,9 @@ class Corrector(Detector):
         """
         # TODO：DEBUG
         original_sentence = sentence
-        print("待检句子：「{}」".format(original_sentence))
+        # print("待检句子：「{}」".format(original_sentence))
         if golden:
-            print("答案：「{}」".format(golden))
+            # print("答案：「{}」".format(golden))
             phase1_golden = [0 if inp_char == gold_char else 1 for inp_char, gold_char in zip(sentence, golden)]
         detail = []
         self.check_corrector_initialized()
