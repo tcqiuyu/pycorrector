@@ -268,7 +268,7 @@ class Detector(object):
         :param sentence:
         :return: [error_word, begin_pos, end_pos, error_type]
         """
-        print("Detect process")
+        # print("Detect process")
         maybe_errors = []
         if not sentence.strip():
             return maybe_errors
